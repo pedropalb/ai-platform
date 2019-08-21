@@ -1,0 +1,10 @@
+name: image-orientation-correction
+channels:
+  - defaults
+  - anaconda
+dependencies:
+  - python=3.7
+  - keras-gpu==2.2.4
+  - pip
+  - pip:
+    - mlflow>=1.2

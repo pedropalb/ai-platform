@@ -1,0 +1,11 @@
+name: image-orientation-correction
+
+conda_env: conda.yaml
+
+entry_points:
+  train:
+    command: "python train.py"
+
+  predict:
+    command: "python main.py {darknet_model_path} {dataset} {SPP} {keras_model_path} {mode} {size} {file_name} {darknet_url}"
+    
