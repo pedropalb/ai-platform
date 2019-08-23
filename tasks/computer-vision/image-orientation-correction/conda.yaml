@@ -7,4 +7,6 @@ dependencies:
   - keras-gpu==2.2.4
   - pip
   - pip:
-    - mlflow>=1.2
+    - mlflow==1.2
+    - opencv-python==4.1.0.25
+    - click==7.0

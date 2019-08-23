@@ -25,11 +25,11 @@ class OrientationModel:
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess, coord)
 
-        self.model_train.fit(epochs=self.params['n_epochs'],
+        self.train_model.fit(epochs=self.params['n_epochs'],
                              steps_per_epoch=self.params['steps_per_epoch'],
-                             callbacks=[EvaluateInputTensor(self.model_validation, steps=100)] + callbacks)
+                             callbacks=[EvaluateInputTensor(self.validation_model, steps=100)] + callbacks)
 
-        self.model_train.save_weights('{}.h5'.format(self.name))
+        self.train_model.save_weights('model_weights.h5')
 
         coord.request_stop()
         coord.join(threads)
