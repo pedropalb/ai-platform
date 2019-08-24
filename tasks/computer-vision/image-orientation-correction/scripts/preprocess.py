@@ -172,8 +172,10 @@ def resize_square_w_padding(image, target_size):
 @click.option("--target-size", default=256, show_default=True, help="The target size of the processed images.")
 def preprocess(input_dir, output_dir, index_path, target_size):
     """
-    Program to preprocess the dataset applying rotation and resizing with padding.
-    It also generates the ground truths for each input image as it applies rotation as well.
+    Program to preprocess the dataset applying rotation with center cropping and resize with padding.
+    The rotation is applied with a random angle which is going to be the ground. The ground truth
+    is going to be a prefix to the image filename. For example, 68_filename.jpg is an image rotated
+    in 68 degrees anticlockwise.
     """
 
     input_dir = Path(input_dir).resolve()
@@ -187,15 +189,18 @@ def preprocess(input_dir, output_dir, index_path, target_size):
             if input_path.exists():
                 image = cv2.imread(str(input_path))
 
-                angle = randint(0, 259)
+                if image is not None:
+                    angle = randint(0, 259)
 
-                image = rotate_and_crop(image, angle)
-                image = resize_square_w_padding(image, target_size)
+                    image = rotate_and_crop(image, angle)
+                    image = resize_square_w_padding(image, target_size)
 
-                output_path = output_dir / input_path.name
-                cv2.imwrite(str(output_path), image)
+                    output_path = output_dir / f"{angle}_{input_path.name}"
+                    cv2.imwrite(str(output_path), image)
+                else:
+                    logging.error(f"The image '{input_path}' might be corrupted")
             else:
-                logging.info(f'File not found: {input_path}')
+                logging.error(f'File not found: {input_path}')
 
 
 if __name__ == '__main__':
