@@ -1,5 +1,7 @@
+import logging
 from pathlib import Path
 import math
+from random import randint
 
 import numpy as np
 import cv2
@@ -112,10 +114,10 @@ def crop_around_center(image, width, height):
     image_size = (image.shape[1], image.shape[0])
     image_center = (int(image_size[0] * 0.5), int(image_size[1] * 0.5))
 
-    if (width > image_size[0]):
+    if width > image_size[0]:
         width = image_size[0]
 
-    if (height > image_size[1]):
+    if height > image_size[1]:
         height = image_size[1]
 
     x1 = int(image_center[0] - width * 0.5)
@@ -127,33 +129,73 @@ def crop_around_center(image, width, height):
 
 
 def rotate_and_crop(image, angle):
-    image = rotate_image(image, angle)
-    h, w, _ = image.shape
+    """
+    Rotate the given image and crops at the center
+    """
 
-    new_w, new_h = rotated_rect_with_max_area(w, h, angle)
+    h, w, _ = image.shape
+    image = rotate_image(image, angle)
+
+    angle_in_rads = (angle * math.pi) / 180
+    new_w, new_h = rotated_rect_with_max_area(w, h, angle_in_rads)
 
     return crop_around_center(image, new_w, new_w)
 
 
+def resize_square_w_padding(image, target_size):
+    """
+    Resize the given image keeping the aspect ratio due to padding
+    """
+
+    old_h, old_w, _ = image.shape
+
+    ratio = float(target_size) / max(old_h, old_w)
+    new_h = int(old_h * ratio)
+    new_w = int(old_w * ratio)
+
+    image = cv2.resize(image, (new_w, new_h))
+
+    delta_w = target_size - new_w
+    delta_h = target_size - new_h
+    top, bottom = delta_h // 2, delta_h - (delta_h // 2)
+    left, right = delta_w // 2, delta_w - (delta_w // 2)
+
+    resized_image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+
+    return resized_image
+
+
 @click.command()
-@click.option("--input-dir", required=True, help="The root dir containing the images")
+@click.option("--input-dir", required=True, help="The root dir containing the images.")
 @click.option("--output-dir", required=True, help="The output dir where the output images are written to.")
-@click.option("--index-path", required=True, help="Text file listing the image paths relative to input-dir")
-def preprocess(input_dir, output_dir, index_path):
+@click.option("--index-path", required=True, help="Text file listing the image paths relative to input-dir.")
+@click.option("--target-size", default=256, show_default=True, help="The target size of the processed images.")
+def preprocess(input_dir, output_dir, index_path, target_size):
+    """
+    Program to preprocess the dataset applying rotation and resizing with padding.
+    It also generates the ground truths for each input image as it applies rotation as well.
+    """
+
     input_dir = Path(input_dir).resolve()
+    output_dir = Path(output_dir).resolve()
 
     with open(index_path, 'r') as f:
         for line in f:
             filename = line.strip()
             input_path = input_dir / filename
 
-            image = cv2.imread(str(input_path))
+            if input_path.exists():
+                image = cv2.imread(str(input_path))
 
-            angle = 0
-            rotated_image = rotate_and_crop(image, angle)
+                angle = randint(0, 259)
 
-            output_path = output_dir / input_path.name
-            cv2.imwrite(str(output_path), rotate_image())
+                image = rotate_and_crop(image, angle)
+                image = resize_square_w_padding(image, target_size)
+
+                output_path = output_dir / input_path.name
+                cv2.imwrite(str(output_path), image)
+            else:
+                logging.info(f'File not found: {input_path}')
 
 
 if __name__ == '__main__':

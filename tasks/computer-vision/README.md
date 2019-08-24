@@ -6,3 +6,4 @@
 4. Image Generation
 5. Denoising
 6. Super Resolution
+7. Image Orientation Correction
