@@ -6,8 +6,8 @@ import tensorflow as tf
 def create_dataset(file_path, size, shape, n_classes, batch_size):
     dataset = tf.data.TFRecordDataset(file_path)
 
-    decode = functools.partial(shape, n_classes)
-    dataset = dataset.map(decode)
+    partial_decode = functools.partial(decode, shape, n_classes)
+    dataset = dataset.map(partial_decode)
     dataset = dataset.map(normalize)
 
     dataset = dataset.shuffle(size)
@@ -15,17 +15,17 @@ def create_dataset(file_path, size, shape, n_classes, batch_size):
     dataset = dataset.repeat()
     dataset = dataset.batch(batch_size)
 
-    iterator = dataset.make_one_shot_iterator()
+    iterator = tf.compat.v1.data.make_one_shot_iterator(dataset)
 
     return iterator.get_next()
 
 
 def decode(shape, n_classes, serialized_example):
-    features = tf.parse_single_example(
+    features = tf.io.parse_single_example(
         serialized_example,
         features={
-            'encoded': tf.FixedLenFeature([], tf.string),
-            'angle': tf.FixedLenFeature([], tf.int64),
+            'encoded': tf.io.FixedLenFeature([], tf.string),
+            'angle': tf.io.FixedLenFeature([], tf.int64),
         })
 
     image = tf.image.decode_jpeg(features['encoded'], channels=3)
@@ -39,6 +39,3 @@ def decode(shape, n_classes, serialized_example):
 def normalize(image, label):
     image = tf.cast(image, tf.float32) * (1. / 255) - 0.5
     return image, label
-
-
-

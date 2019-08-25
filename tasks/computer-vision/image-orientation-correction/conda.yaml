@@ -4,10 +4,10 @@ channels:
   - anaconda
 dependencies:
   - python=3.7
-  - numpy<1.17
   - keras-gpu==2.2.4
   - pip
   - pip:
+    - numpy<1.17
     - mlflow==1.2
     - opencv-python==4.1.0.25
     - click==7.0

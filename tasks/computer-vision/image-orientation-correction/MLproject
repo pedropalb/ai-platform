@@ -4,7 +4,9 @@ conda_env: conda.yaml
 
 entry_points:
   train:
-    command: "python train.py"
+    parameters:
+      config_path: path
+    command: "python train.py --config-path={config_path}"
 
   predict:
     command: "python main.py {darknet_model_path} {dataset} {SPP} {keras_model_path} {mode} {size} {file_name} {darknet_url}"
