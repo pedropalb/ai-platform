@@ -31,7 +31,7 @@ def decode(shape, n_classes, serialized_example):
     image = tf.image.decode_jpeg(features['encoded'], channels=3)
     image.set_shape(shape)
 
-    label = tf.cast(features['angle'], tf.int32)
+    label = tf.cast(features['angle'], tf.int64)
 
     return image, tf.one_hot(label, n_classes)
 

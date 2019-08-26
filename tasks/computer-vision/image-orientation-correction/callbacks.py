@@ -1,4 +1,10 @@
-from keras.callbacks import Callback
+import io
+import logging
+
+import numpy as np
+from PIL import Image
+import tensorflow as tf
+from keras.callbacks import Callback, TensorBoard
 
 
 class EvaluateInputTensor(Callback):
@@ -46,3 +52,60 @@ class EvaluateInputTensor(Callback):
 
         if self.verbose > 0:
             print(metrics_str)
+
+
+class TensorBoardWithImages(TensorBoard):
+    """
+    Add image examples to Tensorboard
+    """
+
+    def __init__(self, log_dir, inputs):
+        super(TensorBoardWithImages, self).__init__(log_dir=log_dir)
+        self.batch_index = 0
+        self.inputs = inputs
+
+    def __load_image(self, tensor):
+        tensor = np.array(tensor.eval(session=self.sess))
+        tensor = ((tensor + 0.5) * 255).astype(np.uint8)
+        height, width, channel = tensor.shape
+        image = Image.fromarray(tensor)
+
+        output = io.BytesIO()
+        image.save(output, format='PNG')
+        image_string = output.getvalue()
+        output.close()
+
+        return tf.Summary.Image(height=height,
+                                width=width,
+                                colorspace=channel,
+                                encoded_image_string=image_string)
+
+    def __load_label(self, label_tensor):
+        label_vector = label_tensor.eval(session=self.sess)
+        label = np.argmax(label_vector)
+
+        prove = ~(label_vector.astype(bool))
+        prove[label] = True
+        assert np.all(prove)
+
+        return np.argmax(label_vector)
+
+    def on_batch_begin(self, batch, logs={}):
+        self.batch_index += 1
+        if self.batch_index % 2 == 0:
+            summaries = []
+            for i in range(8):
+                image_tensor = self.inputs[0][i]
+                label_tensor = self.inputs[1][i]
+
+                image = self.__load_image(image_tensor)
+                label = self.__load_label(label_tensor)
+
+                summaries.append(tf.Summary.Value(tag=f'{label}/img{i}',
+                                                  image=image))
+
+            self.writer.add_summary(tf.Summary(value=summaries),
+                                    global_step=self.batch_index)
+
+            logging.info("Beginning a batch")
+            self.writer.flush()

@@ -4,8 +4,9 @@ from keras.applications import ResNet50
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from keras.layers import Flatten, Dense
 import keras.backend as K
+from keras.optimizers import Adam
 
-from callbacks import EvaluateInputTensor
+from callbacks import EvaluateInputTensor, TensorBoardWithImages
 
 
 class OrientationModel:
@@ -27,7 +28,7 @@ class OrientationModel:
 
         self.train_model.fit(epochs=self.params['n_epochs'],
                              steps_per_epoch=self.params['steps_per_epoch'],
-                             callbacks=[EvaluateInputTensor(self.validation_model, steps=100)] + callbacks)
+                             callbacks=[EvaluateInputTensor(self.validation_model, steps=50)] + callbacks)
 
         self.train_model.save_weights('model_weights.h5')
 
@@ -52,7 +53,7 @@ class OrientationModel:
             verbose=1
         )
 
-        tensorboard = TensorBoard(log_dir=logs_path)
+        tensorboard = TensorBoardWithImages(logs_path, self.train_dataset)
 
         return [checkpointer, tensorboard]
 
@@ -68,8 +69,10 @@ class OrientationModel:
         output = Dense(self.params['n_classes'], activation='softmax', name='fc360')(x)
 
         model = Model(inputs=input, outputs=output)
+
+        optimizer= Adam(lr=0.01, decay=1e-3)
         model.compile(loss='categorical_crossentropy',
-                      optimizer='adam',
+                      optimizer=optimizer,
                       metrics=[self.__calculate_error],
                       target_tensors=[dataset[1]])
 

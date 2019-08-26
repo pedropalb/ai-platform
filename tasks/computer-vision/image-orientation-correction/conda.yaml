@@ -2,12 +2,14 @@ name: image-orientation-correction
 channels:
   - defaults
   - anaconda
+  - conda-forge
 dependencies:
   - python=3.7
-  - keras-gpu==2.2.5
+  - keras==2.2.5
   - pip
   - pip:
     - numpy<1.17
     - mlflow==1.2
+    - pillow==6.1.0
     - opencv-python==4.1.0.25
     - click==7.0
