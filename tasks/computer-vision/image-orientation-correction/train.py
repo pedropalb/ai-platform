@@ -1,6 +1,9 @@
+import os
 import json
 
 import click
+import mlflow
+import mlflow.keras
 
 from dataset import create_dataset
 from model import OrientationModel
@@ -9,6 +12,9 @@ from model import OrientationModel
 @click.command()
 @click.option('--config-path', required=True, help="The path to the configuration json.")
 def main(config_path):
+    mlflow.set_experiment('orientation-correction')
+    mlflow.keras.autolog()
+
     with open(config_path) as f:
         configs = json.load(f)
 
@@ -23,11 +29,9 @@ def main(config_path):
                                         configs['shape'],
                                         n_classes=configs['n_classes'],
                                         batch_size=configs['batch_size'])
-    print(train_dataset)
-    print(validation_dataset)
 
-    # model = OrientationModel(train_dataset, validation_dataset, configs)
-    # model.train(configs['log_path'])
+    model = OrientationModel(train_dataset, validation_dataset, configs)
+    model.train(configs['log_path'])
 
 
 if __name__ == '__main__':

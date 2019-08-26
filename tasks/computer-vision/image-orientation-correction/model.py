@@ -67,7 +67,7 @@ class OrientationModel:
 
         output = Dense(self.params['n_classes'], activation='softmax', name='fc360')(x)
 
-        model = Model(input=input, output=output)
+        model = Model(inputs=input, outputs=output)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
                       metrics=[self.__calculate_error],
