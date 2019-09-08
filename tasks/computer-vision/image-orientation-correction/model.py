@@ -53,7 +53,7 @@ class OrientationModel:
             verbose=1
         )
 
-        tensorboard = TensorBoardWithImages(logs_path, self.train_dataset)
+        tensorboard = TensorBoardWithImages(logs_path, self.train_dataset, self.params['batch_size'])
 
         return [checkpointer, tensorboard]
 
@@ -70,7 +70,7 @@ class OrientationModel:
 
         model = Model(inputs=input, outputs=output)
 
-        optimizer= Adam(lr=0.01, decay=1e-3)
+        optimizer = Adam(lr=0.01, decay=1e-3)
         model.compile(loss='categorical_crossentropy',
                       optimizer=optimizer,
                       metrics=[self.__calculate_error],

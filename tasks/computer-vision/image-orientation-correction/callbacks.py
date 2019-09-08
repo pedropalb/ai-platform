@@ -59,10 +59,11 @@ class TensorBoardWithImages(TensorBoard):
     Add image examples to Tensorboard
     """
 
-    def __init__(self, log_dir, inputs):
+    def __init__(self, log_dir, inputs, batch_size):
         super(TensorBoardWithImages, self).__init__(log_dir=log_dir)
         self.batch_index = 0
         self.inputs = inputs
+        self.batch_size = batch_size
 
     def __load_image(self, tensor):
         tensor = np.array(tensor.eval(session=self.sess))
@@ -92,9 +93,9 @@ class TensorBoardWithImages(TensorBoard):
 
     def on_batch_begin(self, batch, logs={}):
         self.batch_index += 1
-        if self.batch_index % 2 == 0:
+        if self.batch_index % 10 == 0:
             summaries = []
-            for i in range(8):
+            for i in range(self.batch_size):
                 image_tensor = self.inputs[0][i]
                 label_tensor = self.inputs[1][i]
 

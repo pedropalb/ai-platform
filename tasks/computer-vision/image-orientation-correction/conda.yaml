@@ -13,3 +13,4 @@ dependencies:
     - pillow==6.1.0
     - opencv-python==4.1.0.25
     - click==7.0
+    - azureml-sdk[tensorboard]==1.0.60

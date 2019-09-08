@@ -1,14 +1,13 @@
 {
   "train_data": {
-    "tf_record_path": "/home/pedro/indoor_dataset/train.tfrecord",
-    "size": 667
-  },
-  "validation_data": {
-    "tf_record_path": "/home/pedro/indoor_dataset/validation.tfrecord",
     "size": 5773
   },
-  "log_path": "/home/pedro/train_logs",
+  "validation_data": {
+    "size": 667
+  },
   "shape": [256, 256, 3],
   "n_classes": 360,
-  "batch_size": 32
+  "batch_size": 32,
+  "n_epochs": 20,
+  "steps_per_epoch": 9
 }
